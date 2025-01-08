@@ -1,0 +1,34 @@
+[package]
+name = "slabbable-validation"
+version = "0.1.0"
+edition = "2021"
+description = "Slabbable data structure trait impls validation"
+homepage = "https://github.com/yaws-rs/edifice"
+keywords = ["http", "uri", "builder", "parser"]
+license = "Apache-2.0/MIT"
+readme = "README.md"
+repository = "https://github.com/yaws-rs/edifice"
+categories = ["science"]
+exclude = ["assets/"]
+
+[features]
+default = ["std"]
+alloc = []
+std = []
+
+[dependencies]
+slabbable = { path = "../slabbable" }
+slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
+
+[dev-dependencies]
+#insta = { version = "1.38" }
+#rstest = { version = "0.19" }
+#criterion = { version = "0.5" }
+
+[package.metadata.docs.rs]
+features = ["std"]
+
+#[[bench]]
+#name = "bencher"
+#required-features = ["parser", "builder"]
+#harness = false

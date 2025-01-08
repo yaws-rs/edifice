@@ -52,9 +52,9 @@ where
     #[inline]
     fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
         // StableVec re-allocators upon grow - we want stable addresses
-//        if self.inner.capacity() < self.num_elements() {
-//            return Err(StableVecSlabError::AtCapacity(self.inner.capacity()));
-//        }
+        if self.inner.capacity() < self.inner.num_elements() + 1 {
+            return Err(StableVecSlabError::AtCapacity(self.inner.capacity()));
+        }
         Ok(self.inner.push(with))
     }
     /// See trait
