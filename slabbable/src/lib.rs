@@ -83,29 +83,44 @@ mod test {
     }
 
     #[rstest]
-    #[case(100)]
-    fn test_1_impl_stable_memory_init(#[case] cap: usize) {
-        let mut impl_ut = TestableSlab::<EvilCStruct>::with_fixed_capacity(cap).unwrap();
+    #[case(TestableSlab::<EvilCStruct>::with_fixed_capacity(100).unwrap())]
+    fn test_1_impl_stable_memory_init<ImplT, Slabber>(#[case] impl_ut_t: ImplT)
+    where
+        ImplT: core::fmt::Debug + Slabbable<Slabber, EvilCStruct>,
+        Slabber: core::fmt::Debug,
+    {
+        let mut impl_ut = impl_ut_t;
         let cap = impl_ut.capacity();
-        assert!(cap > 0);
+
         let mut ptrs_chk = Vec::with_capacity(cap);
-        for z in 0..cap {
-            let slot = impl_ut
-                .take_next_with(EvilCStruct {
-                    forever: 0,
-                    whatever: 0,
-                    yet_another: 0,
-                })
-                .expect("oof");
-            let g = impl_ut
-                .slot_get_ref(slot)
-                .unwrap()
-                .expect(format!("slot {} was not inserted", z).as_str());
+        for _z in 0..cap {
+            let slot = impl_ut.take_next_with(EvilCStruct {
+                forever: 0,
+                whatever: 0,
+                yet_another: 0,
+            });
+            let slot = match slot {
+                Ok(slot) => slot,
+                _ => panic!("Could not take slot"),
+            };
+            let g = impl_ut.slot_get_ref(slot);
+            let g = match g {
+                Ok(g) => g,
+                _ => panic!("Error with slot_get_ref(slot)"),
+            };
+            let g = if let Some(g) = g {
+                g
+            } else {
+                panic!("Error finding reference back with slot_get_ref(slot)");
+            };
             let ptr = std::ptr::addr_of!(*g);
             ptrs_chk.push((slot, ptr));
         }
         for (slot, ptr) in ptrs_chk {
-            let chk = impl_ut.slot_get_ref(slot).unwrap().unwrap();
+            let chk = match impl_ut.slot_get_ref(slot) {
+                Ok(Some(chk)) => chk,
+                _ => panic!("Error with slot_get_ref(slot)"),
+            };
             let chk_ptr = std::ptr::addr_of!(*chk);
             assert_eq!(ptr, chk_ptr);
         }
