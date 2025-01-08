@@ -1,0 +1,38 @@
+[package]
+name = "slabbable"
+version = "0.1.0"
+edition = "2021"
+description = "Slabbable data structure trait"
+homepage = "https://github.com/yaws-rs/ytypes"
+keywords = ["http", "uri", "builder", "parser"]
+license = "Apache-2.0/MIT"
+readme = "README.md"
+repository = "https://github.com/yaws-rs/edifice"
+categories = ["science"]
+exclude = ["assets/"]
+
+[features]
+default = ["std"]
+alloc = []
+std = []
+
+[dependencies]
+
+[dev-dependencies]
+#insta = { version = "1.38" }
+rstest = { version = "0.19" }
+#criterion = { version = "0.5" }
+
+[package.metadata.docs.rs]
+features = ["std"]
+
+#[[bench]]
+#name = "bencher"
+#required-features = ["parser", "builder"]
+#harness = false
+
+#[[example]]
+#name = "construct_uri"
+#required-features = ["parser"]
+#harness = false
+#doc-scrape-examples = true
