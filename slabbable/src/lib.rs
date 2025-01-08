@@ -9,7 +9,7 @@
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![doc = include_str!("../README.md")]
 
-//! Slottable is the trait for storage slab-slotmaps for the purpose of
+//! Slabbable is the trait for storage slab-slotmaps for the purpose of
 //! keeping the underlying request data alive when kernel is either modifying
 //! or keeping a reference of the said data through raw pointers.
 //!
@@ -76,13 +76,14 @@ mod test {
 
     #[repr(packed, C)]
     #[derive(Debug, Clone)]
-    struct EvilCStruct {
+    struct SomeCStruct {
         forever: u8,
         whatever: u16,
         yet_another: u32,
     }
 
     #[rstest]
+    #[case(TestableSlab::<EvilCStruct>::with_fixed_capacity(10).unwrap())]
     #[case(TestableSlab::<EvilCStruct>::with_fixed_capacity(100).unwrap())]
     fn test_1_impl_stable_memory_init<ImplT, Slabber>(#[case] impl_ut_t: ImplT)
     where
