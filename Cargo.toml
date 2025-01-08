@@ -1,0 +1,3 @@
+[workspace]
+members = ["slabbable", "slabbable-impls/*"]
+resolver = "2"
