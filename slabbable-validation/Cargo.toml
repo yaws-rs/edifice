@@ -25,12 +25,12 @@ slabbable-nohash-hasher = { optional = true, path = "../slabbable-impls/nohash-h
 [dev-dependencies]
 #insta = { version = "1.38" }
 #rstest = { version = "0.19" }
-#criterion = { version = "0.5" }
+criterion = { version = "0.5" }
 
 [package.metadata.docs.rs]
 features = ["std"]
 
-#[[bench]]
-#name = "bencher"
+[[bench]]
+name = "bencher"
 #required-features = ["parser", "builder"]
-#harness = false
+harness = false
