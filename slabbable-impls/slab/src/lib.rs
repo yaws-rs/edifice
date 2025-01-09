@@ -9,22 +9,12 @@
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![doc = include_str!("../README.md")]
 
-//! StableVec does not shift elements upon deletion and has stable index
-//! and does not invalide indexes upon that happening.
-//!
-//! We are not concerned about continuous memory since we are not iterating
-//! or sorting our collection.
-//!
-//! This impl of StableVec re-uses idx unlike impl that keeps track of rotating
-//! index within.
-
+use slab::Slab;
 use slabbable::Slabbable;
-
-use stable_vec::{core::BitVecCore, StableVecFacade};
 
 /// Error types
 #[derive(Debug, PartialEq)]
-pub enum StableVecSlabError {
+pub enum SlabSlabError {
     /// At Capacity, not able to take more
     AtCapacity(usize),
     /// Invalid index referred to
@@ -33,46 +23,46 @@ pub enum StableVecSlabError {
 
 /// Holder
 #[derive(Debug)]
-pub struct StableVecSlab<Item> {
-    inner: StableVecFacade<Item, BitVecCore<Item>>,
+pub struct SlabSlab<Item> {
+    inner: Slab<Item>,
 }
 
-impl<Item> Slabbable<StableVecSlab<Item>, Item> for StableVecSlab<Item>
+impl<Item> Slabbable<SlabSlab<Item>, Item> for SlabSlab<Item>
 where
     Item: core::fmt::Debug + Clone,
 {
-    type Error = StableVecSlabError;
+    type Error = SlabSlabError;
     /// See trait
     fn with_fixed_capacity(cap: usize) -> Result<Self, Self::Error> {
         Ok(Self {
-            inner: StableVecFacade::<Item, BitVecCore<Item>>::with_capacity(cap),
+            inner: Slab::with_capacity(cap),
         })
     }
     /// See trait
     #[inline]
     fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
-        // StableVec re-allocators upon grow - we want stable addresses
-        if self.inner.capacity() < self.inner.num_elements() + 1 {
-            return Err(StableVecSlabError::AtCapacity(self.inner.capacity()));
+        // Slab re-allocators upon grow - we want stable addresses
+        if self.inner.capacity() < self.inner.len() + 1 {
+            return Err(SlabSlabError::AtCapacity(self.inner.capacity()));
         }
-        Ok(self.inner.push(with))
+        Ok(self.inner.insert(with))
     }
     /// See trait
     #[inline]
     fn mark_for_reuse(&mut self, slot: usize) -> Result<Item, Self::Error> {
         if slot > self.inner.capacity() {
-            return Err(StableVecSlabError::InvalidIndex(slot));
+            return Err(SlabSlabError::InvalidIndex(slot));
         }
-        match self.inner.remove(slot) {
+        match self.inner.try_remove(slot) {
             Some(i) => Ok(i),
-            None => Err(StableVecSlabError::InvalidIndex(slot)),
+            None => Err(SlabSlabError::InvalidIndex(slot)),
         }
     }
     /// See trait
     #[inline]
     fn slot_get_ref(&self, slot: usize) -> Result<Option<&Item>, Self::Error> {
         if slot > self.inner.capacity() {
-            return Err(StableVecSlabError::InvalidIndex(slot));
+            return Err(SlabSlabError::InvalidIndex(slot));
         }
         Ok(self.inner.get(slot))
     }
@@ -84,7 +74,7 @@ where
     /// See trait
     #[inline]
     fn remaining(&self) -> Option<usize> {
-        let rem = self.inner.capacity() - self.inner.num_elements();
+        let rem = self.inner.capacity() - self.inner.len();
         match rem {
             0 => None,
             1_usize.. => Some(rem),

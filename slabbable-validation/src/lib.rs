@@ -33,6 +33,30 @@ mod test {
         }
     }
 
+    #[cfg(feature = "slabbable-slab")]
+    mod slabbable_slab {
+        use super::*;
+        use ::slabbable_slab::SlabSlab;
+
+        #[test]
+        fn slab() {
+            let mut imp = SlabSlab::<SomeCStruct>::with_fixed_capacity(5).unwrap();
+            _1_impl_stable_memory_init(&mut imp)
+        }
+    }
+
+    #[cfg(feature = "slabbable-nohash-hasher")]
+    mod slabbable_nohash_hasher {
+        use super::*;
+        use ::slabbable_nohash_hasher::NoHashSlab;
+
+        #[test]
+        fn slab() {
+            let mut imp = NoHashSlab::<SomeCStruct>::with_fixed_capacity(5).unwrap();
+            _1_impl_stable_memory_init(&mut imp)
+        }
+    }
+
     fn _1_impl_stable_memory_init<ImplT, Slabber>(impl_ut: &mut ImplT)
     where
         ImplT: core::fmt::Debug + Slabbable<Slabber, SomeCStruct>,

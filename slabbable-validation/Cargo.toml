@@ -19,6 +19,8 @@ std = []
 [dependencies]
 slabbable = { path = "../slabbable" }
 slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
+slabbable-slab = { optional = true, path = "../slabbable-impls/slab" }
+slabbable-nohash-hasher = { optional = true, path = "../slabbable-impls/nohash-hasher" }
 
 [dev-dependencies]
 #insta = { version = "1.38" }
