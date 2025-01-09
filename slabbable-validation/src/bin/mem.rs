@@ -89,7 +89,7 @@ fn fmt_direction(d: &Direction) -> String {
 fn print_mem_report(stage: String, rep: &MemReport) {
     let phys = fmt_direction(&rep.phys);
     let virt = fmt_direction(&rep.virt);
-    println!("== {stage}\n - MemReport: phys {phys} virt {virt}");
+    println!("== {stage}\n - phys {phys} virt {virt}");
 }
 
 fn run_errand<S, I: core::fmt::Debug>(info: &'static str, slab: &mut S)
@@ -99,7 +99,7 @@ where
 {
     let baseline = mem_take_snapshot();
     print_mem_report(
-        format!("{} / initialized (over baseline)", info),
+        format!("{} / initialized (baseline)", info),
         &mem_cmp_to(&baseline),
     );
     fill_1m_basic(slab);
@@ -112,20 +112,22 @@ where
 #[cfg(feature = "slabbable-nohash-hasher")]
 fn nohash_hasher() {
     let mut slab =
-        slabbable_nohash_hasher::NoHashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
+        slabbable_nohash_hasher::NoHashSlab::<SomeCStruct>::with_fixed_capacity(10_024_000)
+            .unwrap();
     run_errand("nohash-hasher", &mut slab);
 }
 
 #[cfg(feature = "slabbable-slab")]
 fn slab() {
-    let mut slab = slabbable_slab::SlabSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
+    let mut slab =
+        slabbable_slab::SlabSlab::<SomeCStruct>::with_fixed_capacity(10_024_000).unwrap();
     run_errand("slab", &mut slab);
 }
 
 #[cfg(feature = "slabbable-stablevec")]
 fn stablevec() {
     let mut slab =
-        slabbable_stablevec::StableVecSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
+        slabbable_stablevec::StableVecSlab::<SomeCStruct>::with_fixed_capacity(10_024_000).unwrap();
     run_errand("StableVec", &mut slab);
 }
 
