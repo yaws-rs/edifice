@@ -3,7 +3,7 @@ name = "slabbable"
 version = "0.1.0"
 edition = "2021"
 description = "Slabbable data structure trait"
-homepage = "https://github.com/yaws-rs/ytypes"
+homepage = "https://github.com/yaws-rs/edifice"
 keywords = ["http", "uri", "builder", "parser"]
 license = "Apache-2.0/MIT"
 readme = "README.md"
@@ -19,7 +19,6 @@ std = []
 [dependencies]
 
 [dev-dependencies]
-#insta = { version = "1.38" }
 rstest = { version = "0.19" }
 
 [package.metadata.docs.rs]
