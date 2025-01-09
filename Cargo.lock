@@ -651,6 +651,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "slabbable-hash"
+version = "0.1.0"
+dependencies = [
+ "hashbrown",
+ "nohash-hasher",
+ "slabbable",
+]
+
+[[package]]
+name = "slabbable-impl-selector"
+version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "slabbable-hash",
+ "slabbable-slab",
+ "slabbable-stablevec",
+]
+
+[[package]]
 name = "slabbable-nohash-hasher"
 version = "0.1.0"
 dependencies = [

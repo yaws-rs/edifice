@@ -1,0 +1,37 @@
+[package]
+name = "slabbable-impl-selector"
+version = "0.1.0"
+edition = "2021"
+description = "Slabbable data structure impl selector"
+homepage = "https://github.com/yaws-rs/edifice"
+keywords = ["http", "uri", "builder", "parser"]
+license = "Apache-2.0/MIT"
+readme = "README.md"
+repository = "https://github.com/yaws-rs/edifice"
+categories = ["science"]
+exclude = ["assets/"]
+
+[features]
+default = ["std"]
+alloc = []
+std = []
+
+[dependencies]
+cfg-if = "1.0.0"
+
+[target.'cfg(slabbable_impl = "stablevec")'.dependencies]
+slabbable-stablevec = { version = "0.1", path = "../slabbable-impls/stable-vec" }
+
+[target.'cfg(slabbable_impl = "slab")'.dependencies]
+slabbable-slab = { version = "0.1", path = "../slabbable-impls/slab" }
+
+[target.'cfg(slabbable_impl = "hash")'.dependencies]
+slabbable-hash = { version = "0.1", path = "../slabbable-impls/hash" }
+
+[dev-dependencies]
+
+[package.metadata.docs.rs]
+features = ["std"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(slabbable_impl, values("stablevec", "slab", "hash"))'] }
