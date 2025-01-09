@@ -15,7 +15,7 @@ where
     S: Slabbable<I, SomeCStruct>,
     <S as Slabbable<I, SomeCStruct>>::Error: std::fmt::Debug,
 {
-    for _z in 0..1_024_000 {
+    for _z in 0..10_024_000 {
         let _slot = slab
             .take_next_with(SomeCStruct {
                 forever: 0,
