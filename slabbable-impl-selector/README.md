@@ -2,6 +2,16 @@
 
 Proxy for conveniently pulling and selecting Slabbable impl.
 
+In your crate that pulls slabbable-impl-selector as dependency:
+```bash
+env RUSTFLAGS='--cfg slabbable_impl="impl"' cargo ..
+```
+
+And at code level:
+```ignore
+use slabbable_impl_selector::SelectedSlab;
+```
+
 ## cfg(slabbable_impl = "..")
 
 | value       | description               |
