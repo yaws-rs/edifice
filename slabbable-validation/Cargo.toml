@@ -21,6 +21,8 @@ slabbable = { path = "../slabbable" }
 slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
 slabbable-slab = { optional = true, path = "../slabbable-impls/slab" }
 slabbable-nohash-hasher = { optional = true, path = "../slabbable-impls/nohash-hasher" }
+memory-stats = "1.2.0"
+humansize = "2.1.3"
 
 [dev-dependencies]
 #insta = { version = "1.38" }
@@ -30,7 +32,9 @@ criterion = { version = "0.5" }
 [package.metadata.docs.rs]
 features = ["std"]
 
+[[bin]]
+name = "mem"
+
 [[bench]]
 name = "bencher"
-#required-features = ["parser", "builder"]
 harness = false
