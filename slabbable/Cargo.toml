@@ -21,18 +21,6 @@ std = []
 [dev-dependencies]
 #insta = { version = "1.38" }
 rstest = { version = "0.19" }
-#criterion = { version = "0.5" }
 
 [package.metadata.docs.rs]
 features = ["std"]
-
-#[[bench]]
-#name = "bencher"
-#required-features = ["parser", "builder"]
-#harness = false
-
-#[[example]]
-#name = "construct_uri"
-#required-features = ["parser"]
-#harness = false
-#doc-scrape-examples = true
