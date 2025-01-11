@@ -14,12 +14,18 @@ use slabbable_impl_selector::SelectedSlab;
 
 ## cfg(slabbable_impl = "..")
 
-| value       | description               |
-| :---        | :---                      |
-| [stablevec] | StableVec                 |
-| [slab]      | Slab                      |
-| [hash]      [ Hash                      |
+| value       | rotating usize? | description               |
+| :---        | :---            | :---                      |
+| [stablevec] | no              | StableVec                 |
+| [slab]      | no              | Slab                      |
+| [hash]      [ yes             | Hash                      |
 
-We do not select any default and this raises a compilation error if not selected.
+Default impl is hash.
 
-The choice of the implementation selection is solely by the top-level binary.
+The choice of the implementation selection is solely by the top-level binary otherwise.
+
+## rotating usize
+
+Rotating usize allows avoiding immedia re-use of key index until whole usize has spinned over.
+
+Without rotating, the re-use will pick-up slots that may have been recently free'd.
