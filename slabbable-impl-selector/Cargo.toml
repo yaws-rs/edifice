@@ -25,7 +25,10 @@ slabbable-stablevec = { version = "0.1", path = "../slabbable-impls/stable-vec" 
 [target.'cfg(slabbable_impl = "slab")'.dependencies]
 slabbable-slab = { version = "0.1", path = "../slabbable-impls/slab" }
 
-[target.'cfg(slabbable_impl = "hash")'.dependencies]
+#[target.'cfg(slabbable_impl = "hash")'.dependencies]
+#slabbable-hash = { version = "0.1", path = "../slabbable-impls/hash" }
+
+[target.'cfg(all(not(slabbable_impl = "slab"), not(slabbable_impl = "stablevec")))'.dependencies]
 slabbable-hash = { version = "0.1", path = "../slabbable-impls/hash" }
 
 [dev-dependencies]

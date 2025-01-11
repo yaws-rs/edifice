@@ -9,13 +9,22 @@
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![doc = include_str!("../README.md")]
 
-#[cfg(all(slabbable_impl = "stablevec", any(slabbable_impl = "slab", slabbable_impl = "hash")))]
+#[cfg(all(
+    slabbable_impl = "stablevec",
+    any(slabbable_impl = "slab", slabbable_impl = "hash")
+))]
 compile_error!("slabbable-impl_selector: must not choose stablevec with anything else");
 
-#[cfg(all(slabbable_impl = "slab", any(slabbable_impl = "stablevec", slabbable_impl = "hash")))]
+#[cfg(all(
+    slabbable_impl = "slab",
+    any(slabbable_impl = "stablevec", slabbable_impl = "hash")
+))]
 compile_error!("slabbable-impl_selector: must not choose slab with anything else");
 
-#[cfg(all(slabbable_impl = "hash", any(slabbable_impl = "slab", slabbable_impl = "stablevec")))]
+#[cfg(all(
+    slabbable_impl = "hash",
+    any(slabbable_impl = "slab", slabbable_impl = "stablevec")
+))]
 compile_error!("slabbable-impl_selector: must not choose hash with anything else");
 
 cfg_if::cfg_if! {
@@ -28,6 +37,9 @@ cfg_if::cfg_if! {
         pub type SelectedSlab<Item> = slabbable_slab::SlabSlab<Item>;
     } else if  #[cfg(slabbable_impl = "hash")] {
         /// Selected impl is Hash
+        pub type SelectedSlab<Item> = slabbable_hash::HashSlab<Item>;
+    } else {
+        /// Selected default impl is Hash
         pub type SelectedSlab<Item> = slabbable_hash::HashSlab<Item>;
     }
 }
