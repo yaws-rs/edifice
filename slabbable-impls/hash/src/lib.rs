@@ -15,12 +15,18 @@ use hashbrown::HashMap as SelectedHashMap;
 #[cfg(not(slabbable_hasher = "_somethingelse"))]
 use nohash_hasher::BuildNoHashHasher as SelectedHasher;
 
-use slabbable::{Slabbable, SlabbableError};
+use slabbable::{ReservedSlot, Slabbable, SlabbableError};
+
+#[derive(Debug)]
+enum ReserveStatus<Item> {
+    Reserved,
+    Taken(Item),
+}
 
 /// Holder
 #[derive(Debug)]
 pub struct HashSlab<Item> {
-    inner: SelectedHashMap<usize, Item, SelectedHasher<usize>>,
+    inner: SelectedHashMap<usize, ReserveStatus<Item>, SelectedHasher<usize>>,
     // wraps
     cur: usize,
     // wraps
@@ -50,8 +56,8 @@ where
     type Error = SlabbableError;
     /// See trait
     fn with_fixed_capacity(cap: usize) -> Result<Self, Self::Error> {
-        let inner: SelectedHashMap<usize, Item, SelectedHasher<usize>> =
-            SelectedHashMap::<usize, Item, SelectedHasher<usize>>::with_capacity_and_hasher(
+        let inner: SelectedHashMap<usize, ReserveStatus<Item>, SelectedHasher<usize>> =
+            SelectedHashMap::<usize, ReserveStatus<Item>, SelectedHasher<usize>>::with_capacity_and_hasher(
                 cap,
                 SelectedHasher::default(),
             );
@@ -61,21 +67,38 @@ where
             rev: 0,
         })
     }
-    /// See trait
     #[inline]
-    fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
+    fn reserve_next(&mut self) -> Result<ReservedSlot, Self::Error> {
         // Slab re-allocators upon grow - we want stable addresses
         if self.inner.capacity() < self.inner.len() + 1 {
             return Err(SlabbableError::AtCapacity(self.inner.capacity()));
         }
         let slot = self._take_next_cur();
         // TOOD: std hashmap try_insert is experimental
-        match self.inner.try_insert(slot, with) {
-            Ok(_) => Ok(slot),
+        match self.inner.try_insert(slot, ReserveStatus::Reserved) {
+            Ok(_) => Ok(ReservedSlot::issue(slot)),
             _ => Err(SlabbableError::Bug(
                 "Next entry by _take_next_cur() already occupied.",
             )),
         }
+    }
+    #[inline]
+    fn take_reserved_with(&mut self, slot: ReservedSlot, with: Item) -> Result<usize, Self::Error> {
+        let id = slot.id();
+
+        match self.inner.insert(id, ReserveStatus::Taken(with)) {
+            Some(v) => match v {
+                ReserveStatus::Reserved => Ok(id),
+                _ => Err(SlabbableError::Bug("Key was already occupied.")),
+            },
+            None => Err(SlabbableError::Bug("Key was not reserved correctly.")),
+        }
+    }
+    /// See trait
+    #[inline]
+    fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
+        let reserved_slot = self.reserve_next()?;
+        self.take_reserved_with(reserved_slot, with)
     }
     /// See trait
     #[inline]
@@ -84,8 +107,8 @@ where
             return Err(SlabbableError::InvalidIndex(slot));
         }
         match self.inner.remove(&slot) {
-            Some(i) => Ok(i),
-            None => Err(SlabbableError::InvalidIndex(slot)),
+            Some(ReserveStatus::Taken(i)) => Ok(i),
+            _ => Err(SlabbableError::InvalidIndex(slot)),
         }
     }
     /// See trait
@@ -94,7 +117,10 @@ where
         if slot > self.inner.capacity() {
             return Err(SlabbableError::InvalidIndex(slot));
         }
-        Ok(self.inner.get(&slot))
+        match self.inner.get(&slot) {
+            Some(ReserveStatus::Taken(itm_ref)) => Ok(Some(itm_ref)),
+            _ => Err(SlabbableError::InvalidIndex(slot)),
+        }
     }
     /// See trait
     #[inline]
