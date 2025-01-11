@@ -10,16 +10,7 @@
 #![doc = include_str!("../README.md")]
 
 use slab::Slab;
-use slabbable::Slabbable;
-
-/// Error types
-#[derive(Debug, PartialEq)]
-pub enum SlabSlabError {
-    /// At Capacity, not able to take more
-    AtCapacity(usize),
-    /// Invalid index referred to
-    InvalidIndex(usize),
-}
+use slabbable::{Slabbable, SlabbableError};
 
 /// Holder
 #[derive(Debug)]
@@ -31,7 +22,7 @@ impl<Item> Slabbable<SlabSlab<Item>, Item> for SlabSlab<Item>
 where
     Item: core::fmt::Debug + Clone,
 {
-    type Error = SlabSlabError;
+    type Error = SlabbableError;
     /// See trait
     fn with_fixed_capacity(cap: usize) -> Result<Self, Self::Error> {
         Ok(Self {
@@ -43,7 +34,7 @@ where
     fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
         // Slab re-allocators upon grow - we want stable addresses
         if self.inner.capacity() < self.inner.len() + 1 {
-            return Err(SlabSlabError::AtCapacity(self.inner.capacity()));
+            return Err(SlabbableError::AtCapacity(self.inner.capacity()));
         }
         Ok(self.inner.insert(with))
     }
@@ -51,18 +42,18 @@ where
     #[inline]
     fn mark_for_reuse(&mut self, slot: usize) -> Result<Item, Self::Error> {
         if slot > self.inner.capacity() {
-            return Err(SlabSlabError::InvalidIndex(slot));
+            return Err(SlabbableError::InvalidIndex(slot));
         }
         match self.inner.try_remove(slot) {
             Some(i) => Ok(i),
-            None => Err(SlabSlabError::InvalidIndex(slot)),
+            None => Err(SlabbableError::InvalidIndex(slot)),
         }
     }
     /// See trait
     #[inline]
     fn slot_get_ref(&self, slot: usize) -> Result<Option<&Item>, Self::Error> {
         if slot > self.inner.capacity() {
-            return Err(SlabSlabError::InvalidIndex(slot));
+            return Err(SlabbableError::InvalidIndex(slot));
         }
         Ok(self.inner.get(slot))
     }

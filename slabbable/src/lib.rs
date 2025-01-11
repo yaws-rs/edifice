@@ -65,6 +65,11 @@ pub trait Slabbable<Slabber, T> {
     fn reap(&mut self) -> Option<usize>;
 }
 
+mod error;
+/// All implementations should use the harmonized error type.
+#[doc(inline)]
+pub use error::SlabbableError;
+
 #[cfg(test)]
 mod testable;
 

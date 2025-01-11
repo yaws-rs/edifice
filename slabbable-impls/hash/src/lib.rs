@@ -9,28 +9,13 @@
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![doc = include_str!("../README.md")]
 
-#[cfg(not(slabbable_hasmap = "std"))]
+#[cfg(not(slabbable_hasmap = "_somethingelse"))]
 use hashbrown::HashMap as SelectedHashMap;
-
-#[cfg(slabbable_hasmap = "std")]
-use std::collections::HashMap as SelectedHashMap;
 
 #[cfg(not(slabbable_hasher = "_somethingelse"))]
 use nohash_hasher::BuildNoHashHasher as SelectedHasher;
 
-use slabbable::Slabbable;
-
-/// Error types
-#[derive(Debug, PartialEq)]
-pub enum HashSlabError {
-    /// At Capacity, not able to take more
-    AtCapacity(usize),
-    /// Invalid index referred to
-    InvalidIndex(usize),
-    /// Entry already exists bug internal slot mechanism took it.
-    /// This is a bug and should not happen.
-    BugAlreadyOccupied,
-}
+use slabbable::{Slabbable, SlabbableError};
 
 /// Holder
 #[derive(Debug)]
@@ -62,7 +47,7 @@ impl<Item> Slabbable<HashSlab<Item>, Item> for HashSlab<Item>
 where
     Item: core::fmt::Debug + Clone,
 {
-    type Error = HashSlabError;
+    type Error = SlabbableError;
     /// See trait
     fn with_fixed_capacity(cap: usize) -> Result<Self, Self::Error> {
         let inner: SelectedHashMap<usize, Item, SelectedHasher<usize>> =
@@ -81,31 +66,33 @@ where
     fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
         // Slab re-allocators upon grow - we want stable addresses
         if self.inner.capacity() < self.inner.len() + 1 {
-            return Err(HashSlabError::AtCapacity(self.inner.capacity()));
+            return Err(SlabbableError::AtCapacity(self.inner.capacity()));
         }
         let slot = self._take_next_cur();
         // TOOD: std hashmap try_insert is experimental
         match self.inner.try_insert(slot, with) {
             Ok(_) => Ok(slot),
-            _ => Err(HashSlabError::BugAlreadyOccupied),
+            _ => Err(SlabbableError::Bug(
+                "Next entry by _take_next_cur() already occupied.",
+            )),
         }
     }
     /// See trait
     #[inline]
     fn mark_for_reuse(&mut self, slot: usize) -> Result<Item, Self::Error> {
         if slot > self.inner.capacity() {
-            return Err(HashSlabError::InvalidIndex(slot));
+            return Err(SlabbableError::InvalidIndex(slot));
         }
         match self.inner.remove(&slot) {
             Some(i) => Ok(i),
-            None => Err(HashSlabError::InvalidIndex(slot)),
+            None => Err(SlabbableError::InvalidIndex(slot)),
         }
     }
     /// See trait
     #[inline]
     fn slot_get_ref(&self, slot: usize) -> Result<Option<&Item>, Self::Error> {
         if slot > self.inner.capacity() {
-            return Err(HashSlabError::InvalidIndex(slot));
+            return Err(SlabbableError::InvalidIndex(slot));
         }
         Ok(self.inner.get(&slot))
     }

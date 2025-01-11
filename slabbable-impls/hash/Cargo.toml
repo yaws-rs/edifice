@@ -22,10 +22,17 @@ slabbable = { version = "0.1", path = "../../slabbable" }
 [target.'cfg(not(slabbable_hasher = "_somethingelse"))'.dependencies]
 nohash-hasher = { version = "0.2" }
 
-[target.'cfg(not(slabbable_hashmap = "std"))'.dependencies]
+[target.'cfg(not(slabbable_hashmap = "_somethingelse"))'.dependencies]
 hashbrown = { version = "0.15" }
 
 [dev-dependencies]
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = [
+    'cfg(slabbable_hasher, values("_somethingelse"))',
+    'cfg(slabbable_hasmap, values("_somethingelse"))',
+]
 
 [package.metadata.docs.rs]
 features = ["std"]
