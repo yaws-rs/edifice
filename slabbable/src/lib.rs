@@ -46,6 +46,10 @@ pub trait Slabbable<Slabber, T> {
     /// Provided with capacity the impl must keep the underlying T addresses stable.
     /// The capacity must be fixed and must not change.
     fn with_fixed_capacity(_: usize) -> Result<Slabber, Self::Error>;
+    /// Reserve the next free slot, ideally with least re-used ID and return it's key ID
+    fn reserve_next(&mut self) -> Result<ReservedSlot, Self::Error>;
+    /// Take the previously reserved slot
+    fn take_reserved_with(&mut self, _: ReservedSlot, _: T) -> Result<usize, Self::Error>;
     /// Take the next free slot, ideally with least re-used ID and return it's key ID
     fn take_next_with(&mut self, _: T) -> Result<usize, Self::Error>;
     /// Mark a given slot for re-use
@@ -63,6 +67,32 @@ pub trait Slabbable<Slabber, T> {
     /// This is an opportunity to reap the freelist or gc in the periods that may afford slowness
     /// traded for opportunity to free up operating memory.
     fn reap(&mut self) -> Option<usize>;
+}
+
+/// Reserved marked for any slot that can be taken later.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ReservedSlot {
+    taken: usize,
+    _priv: (),
+}
+
+impl ReservedSlot {
+    /// Provide a new ReservedSlot.
+    ///
+    /// # Warning
+    ///
+    /// This is not intended to be used from code that uses one of the implementations.
+    /// This is solely used when implementing Slabbable trait for reservation functionality.
+    pub fn issue(id: usize) -> Self {
+        Self {
+            taken: id,
+            _priv: (),
+        }
+    }
+    /// Id of the resered slot in case this is needed before taking the actual slot.
+    pub fn id(&self) -> usize {
+        self.taken
+    }
 }
 
 mod error;
@@ -88,11 +118,11 @@ mod test {
     }
 
     #[rstest]
-    #[case(TestableSlab::<EvilCStruct>::with_fixed_capacity(10).unwrap())]
-    #[case(TestableSlab::<EvilCStruct>::with_fixed_capacity(100).unwrap())]
+    #[case(TestableSlab::<SomeCStruct>::with_fixed_capacity(10).unwrap())]
+    #[case(TestableSlab::<SomeCStruct>::with_fixed_capacity(100).unwrap())]
     fn test_1_impl_stable_memory_init<ImplT, Slabber>(#[case] impl_ut_t: ImplT)
     where
-        ImplT: core::fmt::Debug + Slabbable<Slabber, EvilCStruct>,
+        ImplT: core::fmt::Debug + Slabbable<Slabber, SomeCStruct>,
         Slabber: core::fmt::Debug,
     {
         let mut impl_ut = impl_ut_t;
@@ -100,7 +130,7 @@ mod test {
 
         let mut ptrs_chk = Vec::with_capacity(cap);
         for _z in 0..cap {
-            let slot = impl_ut.take_next_with(EvilCStruct {
+            let slot = impl_ut.take_next_with(SomeCStruct {
                 forever: 0,
                 whatever: 0,
                 yet_another: 0,

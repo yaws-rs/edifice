@@ -17,7 +17,6 @@ pub enum SlabbableError {
     Bug(&'static str),
 }
 
-
 impl Display for SlabbableError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
