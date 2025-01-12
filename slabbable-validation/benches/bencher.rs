@@ -17,11 +17,11 @@ fn criterion_benchmark(c: &mut Criterion) {
     //    #[cfg(feature = "slabbable-stablevec")]
     //    let mut imp = StableVecSlab::<SomeCStruct>::with_fixed_capacity(1024).unwrap();
 
-    #[cfg(feature = "slabbable-nohash-hasher")]
+    #[cfg(feature = "slabbable-hash")]
     c.bench_function("nohash-hasher 1,024,000 insert", |b| {
         b.iter(|| {
             let mut imp =
-                slabbable_nohash_hasher::NoHashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000)
+                slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000)
                     .unwrap();
             for _z in 0..1_024_000 {
                 let _slot = imp
@@ -35,10 +35,10 @@ fn criterion_benchmark(c: &mut Criterion) {
         })
     });
 
-    #[cfg(feature = "slabbable-nohash-hasher")]
+    #[cfg(feature = "slabbable-hash")]
     c.bench_function("nohash-hasher get the 512,000 th of 1,024,000", |b| {
         let mut imp =
-            slabbable_nohash_hasher::NoHashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000)
+            slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000)
                 .unwrap();
         for _z in 0..1_024_000 {
             let _slot = imp

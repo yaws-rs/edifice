@@ -702,6 +702,7 @@ dependencies = [
  "humansize",
  "memory-stats",
  "slabbable",
+ "slabbable-hash",
  "slabbable-nohash-hasher",
  "slabbable-slab",
  "slabbable-stablevec",

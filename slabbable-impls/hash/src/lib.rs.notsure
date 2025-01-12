@@ -17,19 +17,12 @@ use nohash_hasher::BuildNoHashHasher as SelectedHasher;
 
 use slabbable::{ReservedSlot, Slabbable, SlabbableError};
 
-#[derive(Debug)]
-enum ReserveStatus<Item> {
-    Reserved,
-    Taken(Item),
-}
-
 /// Holder
 #[derive(Debug)]
 pub struct HashSlab<Item> {
-    inner: SelectedHashMap<usize, ReserveStatus<Item>, SelectedHasher<usize>>,
-    // HashBrown seems to report wrong capacity() for guaranteed no-realloc
-    // so we have to track our own to ensure it doesn't move things around.
-    max_capacity: usize,
+    inner: SelectedHashMap<usize, Item, SelectedHasher<usize>>,
+    // this should be small - there is slight penalty checking it if very long for weird reason?
+    reserved: Vec<usize>,
     // wraps
     cur: usize,
     // wraps
@@ -59,84 +52,102 @@ where
     type Error = SlabbableError;
     /// See trait
     fn with_fixed_capacity(cap: usize) -> Result<Self, Self::Error> {
-        let inner: SelectedHashMap<usize, ReserveStatus<Item>, SelectedHasher<usize>> =
-            SelectedHashMap::<usize, ReserveStatus<Item>, SelectedHasher<usize>>::with_capacity_and_hasher(
+        let inner: SelectedHashMap<usize, Item, SelectedHasher<usize>> =
+            SelectedHashMap::<usize, Item, SelectedHasher<usize>>::with_capacity_and_hasher(
                 cap,
                 SelectedHasher::default(),
             );
         Ok(Self {
             inner,
-            max_capacity: cap,
+            reserved: vec![],
             cur: 0,
             rev: 0,
         })
     }
     #[inline]
     fn reserve_next(&mut self) -> Result<ReservedSlot, Self::Error> {
-        // Slab re-allocators upon grow - we want stable addresses
-        if self.max_capacity < self.inner.len() + 1 {
-            return Err(SlabbableError::AtCapacity(self.max_capacity));
+        if self.inner.capacity() < self.inner.len() + 1 {
+            return Err(SlabbableError::AtCapacity(self.inner.capacity()));
         }
         let slot = self._take_next_cur();
-        // TOOD: std hashmap try_insert is experimental
-        match self.inner.try_insert(slot, ReserveStatus::Reserved) {
-            Ok(_) => Ok(ReservedSlot::issue(slot)),
-            _ => Err(SlabbableError::Bug(
-                "Next entry by _take_next_cur() already occupied.",
-            )),
+
+        if self.inner.get(&slot).is_some() {
+            return Err(SlabbableError::Bug("Next entry by _take_next_cur() already occupied."));
         }
+        
+        self.reserved.push(slot);
+        Ok(ReservedSlot::issue(slot))
     }
     #[inline]
     fn take_reserved_with(&mut self, slot: ReservedSlot, with: Item) -> Result<usize, Self::Error> {
         let id = slot.id();
 
-        match self.inner.insert(id, ReserveStatus::Taken(with)) {
-            Some(v) => match v {
-                ReserveStatus::Reserved => Ok(id),
-                _ => Err(SlabbableError::Bug("Key was already occupied.")),
-            },
-            None => Err(SlabbableError::Bug("Key was not reserved correctly.")),
+        match self.inner.insert(id, with) {
+            Some(v) => Err(SlabbableError::Bug("Key was already occupied.")),
+            None => Ok(id)
         }
     }
     /// See trait
     #[inline]
     fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
-        let reserved_slot = self.reserve_next()?;
-        self.take_reserved_with(reserved_slot, with)
+        // Slab re-allocators upon grow - we want stable addresses
+        if self.inner.capacity() < self.inner.len() + 1 {
+            return Err(SlabbableError::AtCapacity(self.inner.capacity()));
+        }
+        let slot = self._take_next_cur();
+        // TOOD: std hashmap try_insert is experimental
+        match self.inner.try_insert(slot, with) {
+            Ok(_) => Ok(slot),
+            _ => Err(SlabbableError::Bug(
+                "Next entry by _take_next_cur() already occupied.",
+            )),
+        }
     }
     /// See trait
     #[inline]
     fn mark_for_reuse(&mut self, slot: usize) -> Result<Item, Self::Error> {
+        if slot > self.inner.capacity() {
+            return Err(SlabbableError::InvalidIndex(slot));
+        }
         match self.inner.remove(&slot) {
-            Some(ReserveStatus::Taken(i)) => Ok(i),
+//            Some(ReserveStatus::Taken(i)) => Ok(i),
+            Some(i) => Ok(i),            
             _ => Err(SlabbableError::InvalidIndex(slot)),
         }
     }
     /// See trait
     #[inline]
     fn slot_get_mut(&mut self, slot: usize) -> Result<Option<&mut Item>, Self::Error> {
-        match self.inner.get_mut(&slot) {
-            Some(ReserveStatus::Taken(itm_ref)) => Ok(Some(itm_ref)),
-            _ => Err(SlabbableError::InvalidIndex(slot)),
+        if slot > self.inner.capacity() {
+            return Err(SlabbableError::InvalidIndex(slot));
         }
+        match self.inner.get_mut(&slot) {
+//            Some(ReserveStatus::Taken(itm_mut_ref)) => Ok(Some(itm_mut_ref)),
+            Some(itm_mut_ref) => Ok(Some(itm_mut_ref)),            
+            _ => Err(SlabbableError::InvalidIndex(slot)),
+        }        
     }
     /// See trait
     #[inline]
     fn slot_get_ref(&self, slot: usize) -> Result<Option<&Item>, Self::Error> {
+        if slot > self.inner.capacity() {
+            return Err(SlabbableError::InvalidIndex(slot));
+        }
         match self.inner.get(&slot) {
-            Some(ReserveStatus::Taken(itm_ref)) => Ok(Some(itm_ref)),
+//            Some(ReserveStatus::Taken(itm_ref)) => Ok(Some(itm_ref)),
+            Some(itm_ref) => Ok(Some(itm_ref)),            
             _ => Err(SlabbableError::InvalidIndex(slot)),
         }
     }
     /// See trait
     #[inline]
     fn capacity(&self) -> usize {
-        self.max_capacity
+        self.inner.capacity()
     }
     /// See trait
     #[inline]
     fn remaining(&self) -> Option<usize> {
-        let rem = self.max_capacity - self.inner.len();
+        let rem = self.inner.capacity() - self.inner.len();
         match rem {
             0 => None,
             1_usize.. => Some(rem),

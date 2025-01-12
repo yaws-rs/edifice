@@ -20,6 +20,7 @@ std = []
 slabbable = { path = "../slabbable" }
 slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
 slabbable-slab = { optional = true, path = "../slabbable-impls/slab" }
+slabbable-hash = { optional = true, path = "../slabbable-impls/hash" }
 slabbable-nohash-hasher = { optional = true, path = "../slabbable-impls/nohash-hasher" }
 memory-stats = "1.2.0"
 humansize = "2.1.3"

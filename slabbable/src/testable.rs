@@ -122,6 +122,17 @@ where
         Err(SlabbableError::InvalidIndex(slot))
     }
     /// See trait
+    fn slot_get_mut(&mut self, slot: usize) -> Result<Option<&mut Item>, Self::Error> {
+        if let Some(x) = self._find(slot) {
+            if let Some(ref mut itm) = &mut self.inner[x] {
+                return Ok(Some(itm));
+            } else {
+                return Err(SlabbableError::Bug("Get ref."));
+            }
+        }
+        Ok(None)
+    }
+    /// See trait
     fn slot_get_ref(&self, slot: usize) -> Result<Option<&Item>, Self::Error> {
         if let Some(x) = self._find(slot) {
             if let Some(itm) = &self.inner[x] {

@@ -54,6 +54,8 @@ pub trait Slabbable<Slabber, T> {
     fn take_next_with(&mut self, _: T) -> Result<usize, Self::Error>;
     /// Mark a given slot for re-use
     fn mark_for_reuse(&mut self, _: usize) -> Result<T, Self::Error>;
+    /// Get mutable reference of slot
+    fn slot_get_mut(&mut self, _: usize) -> Result<Option<&mut T>, Self::Error>;
     /// Get reference of slot
     fn slot_get_ref(&self, _: usize) -> Result<Option<&T>, Self::Error>;
     /// The capacity of the slab-slotmap
