@@ -7,9 +7,26 @@ In your crate that pulls slabbable-impl-selector as dependency:
 env RUSTFLAGS='--cfg slabbable_impl="impl"' cargo ..
 ```
 
-And at code level:
+Cargo.toml
+```toml
+slabbable = { version = "0.1" }
+slabbable-impl-selector = { version = "0.1" }
+```
+
+Code level:
 ```ignore
-use slabbable_impl_selector::SelectedSlab;
+use slabbable::{Slabbable, SlabbableError};
+use ::slabbable_impl_selector::SelectedSlab;
+
+#[derive(Clone, Debug)]
+struct Holder {
+  my_stuff: SelectedSlab<usize>,
+}
+
+let mut slab = SelectedSlab::<usize>::with_fixed_capacity(1);
+slab.take_next_with(1).expect("Could not take the first one");
+assert!(slab.take_next_with(2), Err(SlabbableError::AtCapacity(1)));
+
 ```
 
 ## cfg(slabbable_impl = "..")
@@ -29,3 +46,7 @@ The choice of the implementation selection is solely by the top-level binary oth
 Rotating usize allows avoiding immedia re-use of key index until whole usize has spinned over.
 
 Without rotating, the re-use will pick-up slots that may have been recently free'd.
+
+[stablevec]: https://docs.rs/slabbable-impl-stablevec
+[slab]: https://docs.rs/slabbable-impl-slab
+[hash]: https://docs.rs/slabbable-impl-hash

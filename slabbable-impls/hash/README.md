@@ -10,3 +10,5 @@ If you would like other hasher / hashmap please add with cfg-switches;
 | :---              | :---   | :---          |
 | slabbable_hasher  | -      | nohash_hasher |
 | slabbable_hashmap | -      | hashbrown     |
+
+See the [trait documentation](https://docs.rs/slabbable).

@@ -6,10 +6,12 @@ All the general sharky optimised data structures and types that yaws is concerne
 
 Trait [Slabbable](./slabbable) is concerned about slotmap / slab implementation.
 
-## Slabbable-slab (Impl)
+See it's [documentation](https://docs.rs/slabbable) how to use the implementation side.
 
-Reference implementation for the Slabbable trait using [slab](https://crates.io/crates/slab) crate.
+## Slabbable Selector
 
-## cmp-slabbable
+You should ideally use the implementation selector to use the user-chosen implementation.
 
-Comparitative benchmarks across slabbable impls.
+See [slabbable-impl-selector documentation](https://docs.rs/slabbable-impl-selector) for the cfg options.
+
+You can also directly use any of the implementaions directly.
