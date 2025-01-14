@@ -9,19 +9,12 @@ struct SomeCStruct {
 }
 
 use slabbable::Slabbable;
+use slabbable_impl_selector::SelectedSlab;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    //    #[cfg(feature = "slabbable-slab")]
-    //    let mut imp = SlabSlab::<SomeCStruct>::with_fixed_capacity(1024).unwrap();
-
-    //    #[cfg(feature = "slabbable-stablevec")]
-    //    let mut imp = StableVecSlab::<SomeCStruct>::with_fixed_capacity(1024).unwrap();
-
-    #[cfg(feature = "slabbable-hash")]
-    c.bench_function("nohash-hasher 1,024,000 insert", |b| {
+    c.bench_function("selected-slab 1,024,000 insert", |b| {
         b.iter(|| {
-            let mut imp =
-                slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
+            let mut imp = SelectedSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
             for _z in 0..1_024_000 {
                 let _slot = imp
                     .take_next_with(black_box(SomeCStruct {
@@ -34,10 +27,8 @@ fn criterion_benchmark(c: &mut Criterion) {
         })
     });
 
-    #[cfg(feature = "slabbable-hash")]
     c.bench_function("nohash-hasher get the 512,000 th of 1,024,000", |b| {
-        let mut imp =
-            slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
+        let mut imp = SelectedSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
         for _z in 0..1_024_000 {
             let _slot = imp
                 .take_next_with(black_box(SomeCStruct {
@@ -51,22 +42,6 @@ fn criterion_benchmark(c: &mut Criterion) {
             black_box(imp.slot_get_ref(512_000).unwrap());
         })
     });
-
-    /*
-    c.bench_function(
-        "nohash-hasher 1024x get-1024th",
-        |b| b.iter(|| {
-
-        })
-    );
-
-    c.bench_function(
-        "nohash-hasher 1024x remove-1024th",
-        |b| b.iter(|| {
-
-        })
-    );
-    */
 }
 
 criterion_group!(benches, criterion_benchmark);

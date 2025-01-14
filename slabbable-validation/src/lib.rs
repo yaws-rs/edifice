@@ -26,19 +26,19 @@ mod test {
         use ::slabbable_impl_selector::SelectedSlab;
 
         #[inline]
-        fn selected_impl(cap: usize) -> SelectedSlab<SomeCStruct> {
-            SelectedSlab::<SomeCStruct>::with_fixed_capacity(cap).unwrap()
+        fn selected_impl<T: Clone + core::fmt::Debug>(cap: usize) -> SelectedSlab<T> {
+            SelectedSlab::<T>::with_fixed_capacity(cap).unwrap()
         }
 
         #[test]
         fn selected_1_3() {
-            let mut imp = selected_impl(5);
+            let mut imp = selected_impl::<SomeCStruct>(5);
             _1_3_impl_stable_memory_init(&mut imp, 5);
         }
 
         #[test]
         fn selected_2_3() {
-            let mut imp = selected_impl(5);
+            let mut imp = selected_impl::<SomeCStruct>(5);
             _2_3_impl_reserve_re_usable(&mut imp, 5);
         }
     }
