@@ -17,7 +17,7 @@ alloc = []
 std = []
 
 [dependencies]
-slabbable = { path = "../slabbable" }
+slabbable = { path = "../slabbable", version = "0.1" }
 slabbable-impl-selector = { path = "../slabbable-impl-selector", version = "0.1" }
 #slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
 #slabbable-slab = { optional = true, path = "../slabbable-impls/slab" }
