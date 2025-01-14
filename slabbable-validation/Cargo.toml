@@ -18,9 +18,10 @@ std = []
 
 [dependencies]
 slabbable = { path = "../slabbable" }
-slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
-slabbable-slab = { optional = true, path = "../slabbable-impls/slab" }
-slabbable-hash = { optional = true, path = "../slabbable-impls/hash" }
+slabbable-impl-selector = { path = "../slabbable-impl-selector", version = "0.1" }
+#slabbable-stablevec = { optional = true, path = "../slabbable-impls/stable-vec" }
+#slabbable-slab = { optional = true, path = "../slabbable-impls/slab" }
+#slabbable-hash = { optional = true, path = "../slabbable-impls/hash" }
 memory-stats = "1.2.0"
 humansize = "2.1.3"
 

@@ -693,9 +693,7 @@ dependencies = [
  "humansize",
  "memory-stats",
  "slabbable",
- "slabbable-hash",
- "slabbable-slab",
- "slabbable-stablevec",
+ "slabbable-impl-selector",
 ]
 
 [[package]]

@@ -29,8 +29,7 @@
 //! 1. Keep the memory addresses stable as-in self-referential structs
 //! 2. Provide free slot and upon freeing the slot must be re-usable
 //! 3. Lookable key by usize that can be copy-referenced without pointer access
-//! 4. Must not leak memory beyond the fixed capacity max.
-//! 5. Must be tested for 1-4 and documented for A-E and perhaps benchmarked.
+//! 4. Should not leak memory beyond the fixed capacity max.
 //!
 //! # Desired Properties
 //!

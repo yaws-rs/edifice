@@ -111,6 +111,14 @@ where
     );
 }
 
+fn selected() {
+    let mut slab =
+        slabbable_impl_selector::SelectedSlab::<SomeCStruct>::with_fixed_capacity(10_024_000)
+            .unwrap();
+    run_errand("selected-slab", &mut slab);
+}
+
+/*
 #[cfg(feature = "slabbable-nohash-hasher")]
 fn nohash_hasher() {
     let mut slab =
@@ -131,15 +139,15 @@ fn stablevec() {
     let mut slab =
         slabbable_stablevec::StableVecSlab::<SomeCStruct>::with_fixed_capacity(10_024_000).unwrap();
     run_errand("StableVec", &mut slab);
-}
+}*/
 
 fn main() {
-    #[cfg(feature = "slabbable-nohash-hasher")]
-    nohash_hasher();
+    //    #[cfg(feature = "slabbable-nohash-hasher")]
+    selected();
 
-    #[cfg(feature = "slabbable-slab")]
+    /*    #[cfg(feature = "slabbable-slab")]
     slab();
 
     #[cfg(feature = "slabbable-stablevec")]
-    stablevec();
+    stablevec(); */
 }
