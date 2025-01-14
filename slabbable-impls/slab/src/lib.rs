@@ -10,12 +10,18 @@
 #![doc = include_str!("../README.md")]
 
 use slab::Slab;
-use slabbable::{Slabbable, SlabbableError};
+use slabbable::{ReservedSlot, Slabbable, SlabbableError};
+
+#[derive(Debug)]
+enum ReserveStatus<Item> {
+    Reserved,
+    Taken(Item),
+}
 
 /// Holder
 #[derive(Debug)]
 pub struct SlabSlab<Item> {
-    inner: Slab<Item>,
+    inner: Slab<ReserveStatus<Item>>,
 }
 
 impl<Item> Slabbable<SlabSlab<Item>, Item> for SlabSlab<Item>
@@ -31,12 +37,38 @@ where
     }
     /// See trait
     #[inline]
-    fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
+    fn reserve_next(&mut self) -> Result<ReservedSlot, Self::Error> {
         // Slab re-allocators upon grow - we want stable addresses
         if self.inner.capacity() < self.inner.len() + 1 {
             return Err(SlabbableError::AtCapacity(self.inner.capacity()));
         }
-        Ok(self.inner.insert(with))
+        let ins = self.inner.insert(ReserveStatus::Reserved);
+        Ok(ReservedSlot::issue(ins))
+    }
+    /// See trait
+    #[inline]
+    fn take_reserved_with(
+        &mut self,
+        r_slot: ReservedSlot,
+        with: Item,
+    ) -> Result<usize, Self::Error> {
+        let slot = r_slot.id();
+
+        let v = match self.inner.get_mut(slot) {
+            Some(v) => match v {
+                ReserveStatus::Reserved => v,
+                _ => return Err(SlabbableError::InvalidIndex(slot)),
+            },
+            _ => return Err(SlabbableError::InvalidIndex(slot)),
+        };
+        *v = ReserveStatus::Taken(with);
+        Ok(slot)
+    }
+    /// See trait
+    #[inline]
+    fn take_next_with(&mut self, with: Item) -> Result<usize, Self::Error> {
+        let reserved_slot = self.reserve_next()?;
+        self.take_reserved_with(reserved_slot, with)
     }
     /// See trait
     #[inline]
@@ -45,8 +77,8 @@ where
             return Err(SlabbableError::InvalidIndex(slot));
         }
         match self.inner.try_remove(slot) {
-            Some(i) => Ok(i),
-            None => Err(SlabbableError::InvalidIndex(slot)),
+            Some(ReserveStatus::Taken(i)) => Ok(i),
+            _ => Err(SlabbableError::InvalidIndex(slot)),
         }
     }
     /// See trait
@@ -55,7 +87,21 @@ where
         if slot > self.inner.capacity() {
             return Err(SlabbableError::InvalidIndex(slot));
         }
-        Ok(self.inner.get(slot))
+        match self.inner.get(slot) {
+            Some(ReserveStatus::Taken(itm_ref)) => Ok(Some(itm_ref)),
+            _ => Err(SlabbableError::InvalidIndex(slot)),
+        }
+    }
+    /// See trait
+    #[inline]
+    fn slot_get_mut(&mut self, slot: usize) -> Result<Option<&mut Item>, Self::Error> {
+        if slot > self.inner.capacity() {
+            return Err(SlabbableError::InvalidIndex(slot));
+        }
+        match self.inner.get_mut(slot) {
+            Some(ReserveStatus::Taken(itm_ref)) => Ok(Some(itm_ref)),
+            _ => Err(SlabbableError::InvalidIndex(slot)),
+        }
     }
     /// See trait
     #[inline]

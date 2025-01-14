@@ -21,8 +21,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("nohash-hasher 1,024,000 insert", |b| {
         b.iter(|| {
             let mut imp =
-                slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000)
-                    .unwrap();
+                slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
             for _z in 0..1_024_000 {
                 let _slot = imp
                     .take_next_with(black_box(SomeCStruct {
@@ -38,8 +37,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     #[cfg(feature = "slabbable-hash")]
     c.bench_function("nohash-hasher get the 512,000 th of 1,024,000", |b| {
         let mut imp =
-            slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000)
-                .unwrap();
+            slabbable_hash::HashSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
         for _z in 0..1_024_000 {
             let _slot = imp
                 .take_next_with(black_box(SomeCStruct {

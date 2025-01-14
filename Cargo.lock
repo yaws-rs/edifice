@@ -670,15 +670,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "slabbable-nohash-hasher"
-version = "0.1.0"
-dependencies = [
- "hashbrown",
- "nohash-hasher",
- "slabbable",
-]
-
-[[package]]
 name = "slabbable-slab"
 version = "0.1.0"
 dependencies = [
@@ -703,7 +694,6 @@ dependencies = [
  "memory-stats",
  "slabbable",
  "slabbable-hash",
- "slabbable-nohash-hasher",
  "slabbable-slab",
  "slabbable-stablevec",
 ]
