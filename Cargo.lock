@@ -664,6 +664,7 @@ name = "slabbable-impl-selector"
 version = "0.1.0"
 dependencies = [
  "cfg-if",
+ "slabbable",
  "slabbable-hash",
  "slabbable-slab",
  "slabbable-stablevec",

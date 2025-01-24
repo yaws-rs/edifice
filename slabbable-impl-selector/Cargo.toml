@@ -32,6 +32,7 @@ slabbable-slab = { version = "0.1", path = "../slabbable-impls/slab" }
 slabbable-hash = { version = "0.1", path = "../slabbable-impls/hash" }
 
 [dev-dependencies]
+slabbable = { version = "0.1", path = "../slabbable" }
 
 [package.metadata.docs.rs]
 features = ["std"]

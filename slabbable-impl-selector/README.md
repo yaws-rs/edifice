@@ -14,18 +14,18 @@ slabbable-impl-selector = { version = "0.1" }
 ```
 
 Code level:
-```ignore
+```rust
 use slabbable::{Slabbable, SlabbableError};
 use ::slabbable_impl_selector::SelectedSlab;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 struct Holder {
   my_stuff: SelectedSlab<usize>,
 }
 
-let mut slab = SelectedSlab::<usize>::with_fixed_capacity(1);
+let mut slab = SelectedSlab::<usize>::with_fixed_capacity(1).unwrap();
 slab.take_next_with(1).expect("Could not take the first one");
-assert!(slab.take_next_with(2), Err(SlabbableError::AtCapacity(1)));
+assert_eq!(slab.take_next_with(2), Err(SlabbableError::AtCapacity(1)));
 
 ```
 
@@ -35,7 +35,7 @@ assert!(slab.take_next_with(2), Err(SlabbableError::AtCapacity(1)));
 | :---        | :---            | :---                      |
 | [stablevec] | no              | StableVec                 |
 | [slab]      | no              | Slab                      |
-| [hash]      [ yes             | Hash                      |
+| [hash]      | yes             | Hash                      |
 
 Default impl is hash.
 
@@ -47,6 +47,6 @@ Rotating usize allows avoiding immedia re-use of key index until whole usize has
 
 Without rotating, the re-use will pick-up slots that may have been recently free'd.
 
-[stablevec]: https://docs.rs/slabbable-impl-stablevec
-[slab]: https://docs.rs/slabbable-impl-slab
-[hash]: https://docs.rs/slabbable-impl-hash
+[stablevec]: https://docs.rs/slabbable-stablevec
+[slab]: https://docs.rs/slabbable-slab
+[hash]: https://docs.rs/slabbable-hash
