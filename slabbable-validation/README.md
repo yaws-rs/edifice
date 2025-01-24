@@ -1,6 +1,6 @@
 # Slabbale Validation
 
-Cross-validate varioous Slabbable implementations.
+Cross-validate between Slabbable implementations through harmonized trait impl validation.
 
 See [blog](https://github.com/pinkforest/pinkforest/blob/main/2025-01-25-slabbable.md).
 
