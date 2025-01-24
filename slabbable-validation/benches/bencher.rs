@@ -16,22 +16,22 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let mut imp = SelectedSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
             for _z in 0..1_024_000 {
-                let _slot = imp
+                let _slot = black_box(imp
                     .take_next_with(black_box(SomeCStruct {
                         forever: 0,
                         whatever: 0,
                         yet_another: 0,
                     }))
-                    .unwrap();
+                    .unwrap());
             }
         })
     });
 
-    c.bench_function("nohash-hasher get the 512,000 th of 1,024,000", |b| {
+    c.bench_function("selected-slab get the 512,000 th of 1,024,000", |b| {
         let mut imp = SelectedSlab::<SomeCStruct>::with_fixed_capacity(1_024_000).unwrap();
         for _z in 0..1_024_000 {
-            let _slot = imp
-                .take_next_with(black_box(SomeCStruct {
+            let _slot = black_box(imp
+                .take_next_with(SomeCStruct {
                     forever: 0,
                     whatever: 0,
                     yet_another: 0,
