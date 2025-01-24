@@ -14,12 +14,12 @@ $ cargo run
 slab impl
 ```ignore
 $ env RUSTFLAGS='--cfg slabbable_impl="slab"' cargo run
-```ignore
+```
 
 stablevec impl
 ```ignore
 $ env RUSTFLAGS='--cfg slabbable_impl="stablevec"' cargo run
-```ignore
+```
 
 ## Benchmark
 
